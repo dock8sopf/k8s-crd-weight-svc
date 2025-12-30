@@ -1,0 +1,15 @@
+apiVersion: example.com/v1alpha1
+kind: ServiceWeight
+metadata:
+  name: standard-service
+  namespace: default
+spec:
+  # 标准Service配置，与原生Service一致
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: my-app
+  type: ClusterIP

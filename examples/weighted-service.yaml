@@ -1,0 +1,24 @@
+apiVersion: example.com/v1alpha1
+kind: ServiceWeight
+metadata:
+  name: weighted-service
+  namespace: default
+spec:
+  # 标准Service基础配置
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: my-app
+  type: ClusterIP
+  
+  # 权重转发配置
+  WeightedBackends:
+    - name: backend-v1
+      port: 8080
+      weight: 70
+    - name: backend-v2
+      port: 8081
+      weight: 30
