@@ -4,8 +4,8 @@ import (
 	"flag"
 	"os"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
+	// 导入所有 Kubernetes 客户端认证插件（例如 Azure、GCP、OIDC 等）
+	// 以确保 exec-entrypoint 和 run 命令可以使用它们
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -59,7 +59,7 @@ func main() {
 		LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.Error(err, "无法启动管理器")
 		os.Exit(1)
 	}
 
@@ -68,24 +68,24 @@ func main() {
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorderFor("serviceweight-controller"),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ServiceWeight")
+		setupLog.Error(err, "无法创建控制器", "controller", "ServiceWeight")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
 
-	// Add health checks
+	// 添加健康检查
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
+		setupLog.Error(err, "无法设置健康检查")
 		os.Exit(1)
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
+		setupLog.Error(err, "无法设置就绪检查")
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
+	setupLog.Info("启动管理器")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.Error(err, "运行管理器出现问题")
 		os.Exit(1)
 	}
 }

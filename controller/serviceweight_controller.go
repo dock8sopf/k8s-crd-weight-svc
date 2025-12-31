@@ -19,7 +19,7 @@ import (
 	k8scrdserviceweight "k8s-crd-service-weight/api/v1alpha1"
 )
 
-// ServiceWeightReconciler reconciles a ServiceWeight object
+// ServiceWeightReconciler 协调 ServiceWeight 对象
 type ServiceWeightReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
@@ -32,42 +32,41 @@ type ServiceWeightReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
+// Reconcile 是主要的 Kubernetes 协调循环的一部分，旨在将集群的当前状态移动到期望状态。
 func (r *ServiceWeightReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	// Fetch the ServiceWeight instance
+	// 获取 ServiceWeight 实例
 	serviceWeight := &k8scrdserviceweight.ServiceWeight{}
 	err := r.Get(ctx, req.NamespacedName, serviceWeight)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected.
-			logger.Info("ServiceWeight resource not found. Ignoring since object must be deleted.")
+			// 请求对象未找到，可能在协调请求后被删除
+			// 拥有的对象会被自动垃圾回收
+			logger.Info("ServiceWeight 资源未找到。由于对象必须被删除，忽略此问题。")
 			return ctrl.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
-		logger.Error(err, "Failed to get ServiceWeight.")
+		// 读取对象出错 - 重新排队请求
+		logger.Error(err, "获取 ServiceWeight 失败。")
 		return ctrl.Result{}, err
 	}
 
-	// Create or update the corresponding Service
-	// If WeightedBackends is empty, it behaves like a normal Service
+	// 创建或更新对应的 Service
+	// 如果 WeightedBackends 为空，它就像一个普通的 Service
 	if len(serviceWeight.Spec.WeightedBackends) == 0 {
-		// Create/update standard service
+		// 创建/更新标准服务
 		return r.reconcileStandardService(ctx, serviceWeight)
 	} else {
-		// Create/update weighted service (need to implement the actual weighted traffic logic)
+		// 创建/更新加权服务（需要实现实际的加权流量逻辑）
 		return r.reconcileWeightedService(ctx, serviceWeight)
 	}
 }
 
-// reconcileStandardService handles the standard Service behavior when no WeightedBackends are specified
+// reconcileStandardService 在没有指定 WeightedBackends 时处理标准 Service 行为
 func (r *ServiceWeightReconciler) reconcileStandardService(ctx context.Context, sw *k8scrdserviceweight.ServiceWeight) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	// Define a new Service object
+	// 定义一个新的 Service 对象
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sw.Name,
@@ -76,46 +75,46 @@ func (r *ServiceWeightReconciler) reconcileStandardService(ctx context.Context, 
 		Spec: sw.Spec.ServiceSpec,
 	}
 
-	// Set ServiceWeight instance as the owner and controller
+	// 将 ServiceWeight 实例设置为 owner 和 controller
 	if err := controllerutil.SetControllerReference(sw, service, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// Check if this Service already exists
+	// 检查此 Service 是否已存在
 	found := &corev1.Service{}
 	err := r.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		logger.Info("Creating a new Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
+		logger.Info("创建新 Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
 		err = r.Create(ctx, service)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		// Service created successfully - return and requeue
+		// Service 创建成功 - 返回并重新排队
 		return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, nil
 	} else if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// Update the found Service spec with the desired spec from ServiceWeight
+	// 使用 ServiceWeight 中期望的 spec 更新找到的 Service
 	found.Spec = sw.Spec.ServiceSpec
-	logger.Info("Updating Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
+	logger.Info("更新 Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
 	if err := r.Update(ctx, found); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// Service updated successfully
+	// Service 更新成功
 	return ctrl.Result{Requeue: true, RequeueAfter: 30 * time.Second}, nil
 }
 
-// reconcileWeightedService handles the weighted traffic distribution when WeightedBackends are specified
+// reconcileWeightedService 在指定了 WeightedBackends 时处理加权流量分发
 func (r *ServiceWeightReconciler) reconcileWeightedService(ctx context.Context, sw *k8scrdserviceweight.ServiceWeight) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	// For this implementation, we'll create a standard Service and log the weighted backends
-	// In a real implementation, you would need to integrate with a service mesh (like Istio)
-	// or implement custom load balancing logic
+	// 在这个实现中，我们将创建一个标准的 Service 并记录加权的后端
+	// 在实际实现中，您需要集成服务网格（如 Istio）
+	// 或实现自定义的负载均衡逻辑
 
-	// Define a new Service object
+	// 定义一个新的 Service 对象
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sw.Name,
@@ -127,57 +126,57 @@ func (r *ServiceWeightReconciler) reconcileWeightedService(ctx context.Context, 
 		Spec: sw.Spec.ServiceSpec,
 	}
 
-	// Set ServiceWeight instance as the owner and controller
+	// 将 ServiceWeight 实例设置为 owner 和 controller
 	if err := controllerutil.SetControllerReference(sw, service, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// Check if this Service already exists
+	// 检查此 Service 是否已存在
 	found := &corev1.Service{}
 	err := r.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		logger.Info("Creating a weighted Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
+		logger.Info("创建加权 Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
 		err = r.Create(ctx, service)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		// Service created successfully
-		logger.Info("Created weighted Service with backends", "Backends", sw.Spec.WeightedBackends)
+		// Service 创建成功
+		logger.Info("创建了带后端的加权 Service", "Backends", sw.Spec.WeightedBackends)
 		return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, nil
 	} else if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// Update the found Service with the new annotations
+	// 使用新的 annotations 更新找到的 Service
 	found.Spec = sw.Spec.ServiceSpec
 	found.Annotations["example.com/weighted-backends"] = fmt.Sprintf("%v", sw.Spec.WeightedBackends)
-	logger.Info("Updating weighted Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
+	logger.Info("更新加权 Service", "Service.Name", service.Name, "Service.Namespace", service.Namespace)
 	if err := r.Update(ctx, found); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// Log the weighted backends for demonstration
-	logger.Info("Weighted Service updated with backends", "Backends", sw.Spec.WeightedBackends)
+	// 记录加权后端用于演示
+	logger.Info("加权 Service 已使用后端更新", "Backends", sw.Spec.WeightedBackends)
 
-	// Update the status of the ServiceWeight
+	// 更新 ServiceWeight 的状态
 	return r.updateServiceWeightStatus(ctx, sw)
 }
 
-// updateServiceWeightStatus updates the status of the ServiceWeight resource
+// updateServiceWeightStatus 更新 ServiceWeight 资源的状态
 func (r *ServiceWeightReconciler) updateServiceWeightStatus(ctx context.Context, sw *k8scrdserviceweight.ServiceWeight) (ctrl.Result, error) {
-	// Create a copy to avoid modifying the original object
+	// 创建副本以避免修改原始对象
 	updatedSW := sw.DeepCopy()
 
-	// Add a condition indicating the ServiceWeight is ready
+	// 添加一个表示 ServiceWeight 已就绪的条件
 	condition := metav1.Condition{
 		Type:               "Ready",
 		Status:             metav1.ConditionTrue,
 		LastTransitionTime: metav1.Now(),
 		Reason:             "ServiceCreated",
-		Message:            "Service created/updated successfully",
+		Message:            "Service 创建/更新成功",
 	}
 
-	// Update or add the condition
+	// 更新或添加条件
 	found := false
 	for i, c := range updatedSW.Status.Conditions {
 		if c.Type == "Ready" {
@@ -191,7 +190,7 @@ func (r *ServiceWeightReconciler) updateServiceWeightStatus(ctx context.Context,
 		updatedSW.Status.Conditions = append(updatedSW.Status.Conditions, condition)
 	}
 
-	// Update the status
+	// 更新状态
 	if err := r.Status().Update(ctx, updatedSW); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -199,7 +198,7 @@ func (r *ServiceWeightReconciler) updateServiceWeightStatus(ctx context.Context,
 	return ctrl.Result{Requeue: true, RequeueAfter: 30 * time.Second}, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
+// SetupWithManager 使用 Manager 设置控制器
 func (r *ServiceWeightReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8scrdserviceweight.ServiceWeight{}).

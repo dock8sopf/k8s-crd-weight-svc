@@ -6,34 +6,34 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// 编辑此文件！这是您拥有的脚手架代码！
+// 注意：json tags 是必需的。您添加的任何新字段都必须有 json tags 才能序列化。
 
-// WeightedBackend defines the backend service with weight
+// WeightedBackend 定义了带权重的后端服务
 type WeightedBackend struct {
-	// Name of the backend service
+	// 后端服务的名称
 	Name string `json:"name"`
-	// Weight for traffic distribution
+	// 用于流量分配的权重
 	Weight int32 `json:"weight"`
-	// Port to forward traffic
+	// 转发流量的端口
 	Port int32 `json:"port"`
 }
 
-// ServiceWeightSpec defines the desired state of ServiceWeight
+// ServiceWeightSpec 定义了 ServiceWeight 的期望状态
 type ServiceWeightSpec struct {
-	// Inherit all fields from core ServiceSpec
+	// 继承 core ServiceSpec 的所有字段
 	corev1.ServiceSpec `json:",inline"`
 
-	// WeightedBackends defines the list of backend services with weights
+	// WeightedBackends 定义了带权重的后端服务列表
 	WeightedBackends []WeightedBackend `json:"weightedBackends,omitempty"`
 }
 
-// ServiceWeightStatus defines the observed state of ServiceWeight
+// ServiceWeightStatus 定义了 ServiceWeight 的观察状态
 type ServiceWeightStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// INSERT ADDITIONAL STATUS FIELD - 定义集群的观察状态
+	// Important: 修改此文件后运行 "make" 重新生成代码
 
-	// Conditions represent the latest available observations of an object's state
+	// Conditions 表示对象状态的最新可用观察结果
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
@@ -41,7 +41,7 @@ type ServiceWeightStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=sw;svcw
 
-// ServiceWeight is the Schema for the serviceweights API
+// ServiceWeight 是 serviceweights API 的模式定义
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:printcolumn:name="Selector",type="string",JSONPath=".spec.selector"
 // +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".spec.type"
@@ -56,7 +56,7 @@ type ServiceWeight struct {
 
 //+kubebuilder:object:root=true
 
-// ServiceWeightList contains a list of ServiceWeight
+// ServiceWeightList 包含一个 ServiceWeight 列表
 
 type ServiceWeightList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -64,7 +64,7 @@ type ServiceWeightList struct {
 	Items           []ServiceWeight `json:"items"`
 }
 
-// DeepCopyObject implements runtime.Object
+// DeepCopyObject 实现 runtime.Object 接口
 func (in *ServiceWeight) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
@@ -72,7 +72,7 @@ func (in *ServiceWeight) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-// DeepCopyObject implements runtime.Object
+// DeepCopyObject 实现 runtime.Object 接口
 func (in *ServiceWeightList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c

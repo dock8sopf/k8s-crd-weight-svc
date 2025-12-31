@@ -1,4 +1,4 @@
-// Package v1alpha1 contains API Schema definitions for the  v1alpha1 API group
+// Package v1alpha1 包含 v1alpha1 API 组的 API 架构定义
 // +kubebuilder:object:generate=true
 // +groupName=example.com
 package v1alpha1
@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	// GroupVersion is group version used to register these objects
+	// GroupVersion 是用于注册这些对象的组版本
 	GroupVersion = schema.GroupVersion{Group: "example.com", Version: "v1alpha1"}
 
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
+	// SchemeBuilder 用于将 Go 类型添加到 GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
 
-	// AddToScheme adds the types in this group-version to the given scheme.
+	// AddToScheme 将本组版本中的类型添加到给定的 scheme
 	AddToScheme = SchemeBuilder.AddToScheme
 )
